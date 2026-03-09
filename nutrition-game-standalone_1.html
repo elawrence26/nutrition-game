@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Nutrition & Metabolism Game</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f8fafb;color:#1e293b;overflow-x:hidden}
+.screen{min-height:100vh;display:none}.screen.active{display:block}
+.home-bg{background:linear-gradient(135deg,#065A60,#0F766E);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.hdr{background:#065A60;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.hdr button{background:none;border:none;color:#fff;font-size:14px;cursor:pointer;font-weight:600}
+.hdr span{color:#14B8A6;font-weight:700;font-size:14px}
+.prog{height:4px;background:#e5e7eb}.prog-fill{height:100%;background:#14B8A6;transition:width 0.3s}
+.container{padding:16px 20px 32px;max-width:440px;margin:0 auto}
+.card-btn{width:100%;max-width:340px;padding:16px 20px;margin-bottom:12px;background:#fff;border:none;border-radius:14px;cursor:pointer;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;align-items:center;gap:14px}
+.card-btn:hover{transform:scale(1.01)}
+.card-btn .em{font-size:32px}.card-btn .ti{font-size:16px;font-weight:700;color:#065A60}.card-btn .de{font-size:12px;color:#888;margin-top:1px}
+.tag{display:inline-block;background:#0F766E20;color:#0F766E;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.q-card{background:#fff;border-radius:18px;padding:24px 20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-height:80px;display:flex;align-items:center;justify-content:center}
+.q-card p{font-size:18px;font-weight:600;line-height:1.45;text-align:center;width:100%}
+.btn{padding:14px 24px;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;color:#fff;width:100%}
+.btn-teal{background:#0F766E}.btn-red{background:#DC2626}.btn-green{background:#16A34A}.btn-amber{background:#D97706}.btn-gray{background:#f1f1f1;color:#333}
+.btn-row{display:flex;gap:12px}.btn-row .btn{flex:1}
+.result-box{border-radius:14px;padding:14px 18px;margin-bottom:12px;border:2px solid}
+.result-ok{background:#f0fdf4;border-color:#16A34A}.result-ok .rt{color:#16A34A}
+.result-no{background:#fef2f2;border-color:#DC2626}.result-no .rt{color:#DC2626}
+.rt{font-weight:800;font-size:16px;margin-bottom:6px}
+.result-box p{font-size:13px;color:#444;line-height:1.55}
+.slide-ref{font-size:11px;color:#0F766E;font-style:italic;margin-top:8px}
+.end-card{background:#fff;border-radius:24px;padding:32px;max-width:360px;width:100%;text-align:center}
+.end-emoji{font-size:56px}.end-title{font-size:22px;font-weight:800;color:#065A60;margin:8px 0 0}
+.end-score{font-size:40px;font-weight:800;margin:8px 0}
+/* Label */
+.label-box{background:#fff;border:3px solid #1a1a1a;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px}
+.label-title{font-weight:900;font-size:16px;border-bottom:8px solid #1a1a1a;padding-bottom:4px;margin-bottom:6px}
+.label-cal{border-top:3px solid #1a1a1a;padding-top:4px;display:flex;justify-content:space-between;font-weight:800;font-size:18px;margin-bottom:4px}
+.label-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #eee;font-size:12px}
+.label-row.bold{font-weight:700}.label-row.warn{color:#DC2626}
+.label-q{background:#7C3AED10;border-radius:12px;padding:12px 16px;margin-bottom:14px;border-left:4px solid #7C3AED}
+.label-q p{font-size:15px;font-weight:700;margin:0}
+.opt-btn{display:block;width:100%;padding:12px 16px;margin-bottom:8px;background:#fff;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;cursor:pointer;text-align:left;font-weight:500}
+.opt-btn.correct{background:#f0fdf4;border-color:#16A34A;color:#16A34A;font-weight:700}
+.opt-btn.wrong{background:#fef2f2;border-color:#DC2626;color:#DC2626;font-weight:700}
+.opt-btn.dim{cursor:default}
+/* Meal */
+.food-cat h3{font-size:13px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:5px}
+.food-btn{padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:2px solid #e5e7eb;background:#fff;font-weight:500;margin:0 4px 6px 0;display:inline-block}
+.food-btn.on{color:#fff;font-weight:700}
+.meal-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:12px 20px;box-shadow:0 -4px 16px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;gap:14px}
+.analysis-card{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.macro-bar{display:flex;height:22px;border-radius:11px;overflow:hidden;margin-bottom:10px}
+.checklist-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+.steps{margin:0;padding-left:18px;font-size:12px;color:#444;line-height:1.7}
+/* Leaderboard */
+.lb-entry{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;margin-bottom:8px;border:1px solid #e5e7eb}
+.lb-rank{font-size:20px;font-weight:800;width:30px;text-align:center}
+.lb-name{font-weight:700;font-size:15px}.lb-game{font-size:12px;color:#94a3b8}
+.lb-pct{font-weight:800;font-size:18px}
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:99}
+.modal{background:#fff;border-radius:20px;padding:28px;max-width:320px;width:90%;text-align:center}
+.modal input{width:100%;padding:10px 14px;border:2px solid #14B8A6;border-radius:10px;font-size:15px;margin-bottom:12px;outline:none}
+@media(max-width:480px){.q-card p{font-size:16px}.container{padding:12px 16px 24px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const mythQ=[
+{s:"Carbs make you gain weight.",a:"myth",e:"Carbohydrates are your brain's preferred fuel. Excess calories from ANY macro can cause weight gain \u2014 carbs aren't the problem. Guidelines recommend 45-65% daily calories from carbs.",c:"Macronutrients"},
+{s:"Eating fat makes you fat.",a:"myth",e:"Your brain is ~60% fat. Vitamins A, D, E, K can only be absorbed with fat. Fat is calorie-dense (9 cal/g) but not inherently fattening.",c:"Macronutrients"},
+{s:"Protein is only important for bodybuilders.",a:"myth",e:"Protein builds enzymes, hormones, antibodies, skin, hair, and more. Every teen needs it. It also slows digestion and keeps you full.",c:"Macronutrients"},
+{s:"You need protein at every meal or muscles break down.",a:"myth",e:"Your body has amino acid pools it draws from. Missing protein at one meal won't cause muscle loss. Overall daily intake matters more.",c:"Macronutrients"},
+{s:"Fiber feeds beneficial gut bacteria.",a:"fact",e:"Fiber is a prebiotic \u2014 it feeds trillions of gut bacteria that produce short-chain fatty acids supporting immune function and mood.",c:"Macronutrients"},
+{s:"Your body needs all three macronutrients every day.",a:"fact",e:"Each macro has a unique job: carbs fuel your brain, protein builds and repairs, fats absorb vitamins and make hormones.",c:"Macronutrients"},
+{s:"Your brain uses about 20% of your body's energy at rest.",a:"fact",e:"Despite being ~2% of body weight, your brain uses ~20% of daily energy \u2014 almost all from glucose. That's why skipping meals hurts concentration.",c:"Metabolism"},
+{s:"Your body recycles about 40 kg of ATP every day.",a:"fact",e:"You store only ~250g of ATP but recycle it so fast you produce ~40 kg daily. Every molecule gets recycled hundreds of times.",c:"Metabolism"},
+{s:"Glycolysis can happen without oxygen.",a:"fact",e:"Glycolysis is anaerobic \u2014 it makes a small amount of ATP without oxygen. That's your 'fast lane' during sprints. The big payoff (ETC) needs oxygen.",c:"Metabolism"},
+{s:"Your metabolism shuts off when you sleep.",a:"myth",e:"Your body constantly repairs cells, maintains temperature, keeps your heart beating. Basal metabolic rate = 60-75% of daily energy use \u2014 even during sleep.",c:"Metabolism"},
+{s:"The mitochondria are where most ATP is produced.",a:"fact",e:"The electron transport chain produces ~34 of ~36-38 total ATP from one glucose. That's why they're the 'powerhouse of the cell.'",c:"Metabolism"},
+{s:"All macronutrients can enter the TCA cycle as acetyl-CoA.",a:"fact",e:"Carbs \u2192 glucose \u2192 pyruvate \u2192 acetyl-CoA. Fats \u2192 beta-oxidation \u2192 acetyl-CoA. Some amino acids \u2192 acetyl-CoA. The TCA cycle is the central roundabout.",c:"Metabolism"},
+{s:"Hunger is a sign your body is working correctly.",a:"fact",e:"Hunger is regulated by ghrelin and leptin. When blood glucose drops, ghrelin rises \u2014 that's your body saying 'time to refuel.' It's a feature, not a bug.",c:"Hunger & Hormones"},
+{s:"Insulin helps move glucose from blood into cells.",a:"fact",e:"Insulin is like a key that unlocks cells so glucose can enter. Without insulin, glucose builds up \u2014 that's what happens in diabetes.",c:"Hunger & Hormones"},
+{s:"Eating after 8pm causes more weight gain.",a:"myth",e:"No metabolic off-switch at night. Total energy balance over time matters more than timing.",c:"Hunger & Hormones"},
+{s:"Teens need to eat every 2-4 hours for stable energy.",a:"fact",e:"Adolescents have high energy demands from growth and brain development. Consistent eating maintains steady blood glucose.",c:"Hunger & Hormones"},
+{s:"Glucagon tells your liver to release stored energy between meals.",a:"fact",e:"When blood sugar drops, glucagon tells the liver to break down glycogen. This keeps blood sugar stable while fasting.",c:"Hunger & Hormones"},
+{s:"Feeling hungry means you have no willpower.",a:"myth",e:"Hunger is driven by hormones, blood sugar, and actual energy needs \u2014 not willpower. Teens are growing and need consistent fuel.",c:"Hunger & Hormones"},
+{s:"\"Detox\" teas help remove toxins from your body.",a:"myth",e:"Your liver and kidneys are your built-in detox system, working 24/7. No tea does this better. 'Detox' is marketing, not medicine.",c:"Nutrition Claims"},
+{s:"\"Natural\" on a food label means healthier.",a:"myth",e:"The FDA has no strict definition for 'natural.' These products can be high in sugar, sodium, or calories. Check the Nutrition Facts panel.",c:"Nutrition Claims"},
+{s:"Protein shakes are necessary for teen athletes.",a:"myth",e:"Most teen athletes get enough protein from food. Supplements aren't regulated like food. Food first.",c:"Nutrition Claims"},
+{s:"You can \"boost\" metabolism with certain foods.",a:"myth",e:"No food dramatically boosts metabolism. Exercise is the most effective way to increase energy expenditure.",c:"Nutrition Claims"},
+{s:"Frozen vegetables can be just as nutritious as fresh.",a:"fact",e:"Frozen veggies are picked at peak ripeness, locking in nutrients. Frozen and canned are affordable powerhouses.",c:"Nutrition Claims"},
+{s:"Multigrain bread is the same as whole grain.",a:"myth",e:"'Multigrain' means multiple grains \u2014 they could all be refined. Check if 'whole wheat' is the FIRST ingredient.",c:"Nutrition Claims"},
+{s:"Simple carbs at lunch explain the 2pm crash.",a:"fact",e:"Simple carbs \u2192 rapid glucose spike \u2192 big insulin release \u2192 blood sugar drops \u2192 crash. Pairing with protein and fat prevents this.",c:"Blood Sugar"},
+{s:"Your body stores short-term energy as glycogen and long-term as fat.",a:"fact",e:"Glycogen is quick but limited (like a phone battery). Fat storage is nearly unlimited and slower (like a backup power bank).",c:"Blood Sugar"},
+{s:"A soda and apple+PB have different blood sugar effects despite similar calories.",a:"fact",e:"Soda spikes fast then crashes. Apple+PB gives gradual, sustained rise. Same calories, different energy curves.",c:"Blood Sugar"},
+{s:"Skipping breakfast has no effect on concentration.",a:"myth",e:"After overnight fasting, glycogen is low. Breakfast replenishes blood glucose for focus and mood.",c:"Blood Sugar"},
+{s:"The brain can only use glucose for fuel under normal conditions.",a:"fact",e:"Glucose is the brain's exclusive fuel normally. During extended fasting it partially switches to ketones, but glucose remains preferred.",c:"Blood Sugar"},
+{s:"Energy drinks give 'energy' the same way cellular respiration does.",a:"myth",e:"Energy drink 'energy' = caffeine + sugar. Real energy = ATP from glycolysis, TCA, and ETC. Caffeine blocks sleepiness; it doesn't create ATP.",c:"Blood Sugar"},
+];
+const labelQ=[
+{product:"Sports Drink (20 oz)",label:{ss:"1 bottle (591ml)",cal:140,tf:0,sf:0,na:270,tc:36,fb:0,as:34,pr:0},q:"How many teaspoons of added sugar?",opts:["About 2 tsp","About 5 tsp","About 8.5 tsp"],correct:2,e:"34g \u00f7 4g/tsp = 8.5 teaspoons! Water is better for most activity under 60 min."},
+{product:"\"Healthy\" Cereal",label:{ss:"3/4 cup (30g)",cal:120,tf:1,sf:0,na:140,tc:25,fb:1,as:9,pr:2},q:"Box says 'Made with Whole Grains.' Mostly whole grain?",opts:["Yes \u2014 says so on box","Probably not \u2014 check ingredients","Definitely yes"],correct:1,e:"'Made with' can mean a tiny amount. With 1g fiber and 9g sugar, check if 'whole wheat' is the FIRST ingredient."},
+{product:"Flavored Yogurt",label:{ss:"1 container (150g)",cal:150,tf:2,sf:1,na:65,tc:25,fb:0,as:15,pr:6},q:"25g total carbs. Where's most of it from?",opts:["Natural milk sugars","Added sugar (15 of 25g)","Fiber from fruit"],correct:1,e:"15 of 25g carbs = added sugar (60%!). Buy plain Greek yogurt and add your own fruit."},
+{product:"Energy Drink (16 oz)",label:{ss:"1 can (473ml)",cal:220,tf:0,sf:0,na:180,tc:54,fb:0,as:54,pr:0},q:"160mg caffeine. What else should concern you?",opts:["The sodium","54g added sugar (13.5 tsp!) + zero nutrients","The calories"],correct:1,e:"13.5 teaspoons sugar with zero protein, fat, fiber, or vitamins. AAP recommends teens avoid energy drinks."},
+{product:"Trail Mix (\"Natural\")",label:{ss:"1/4 cup (30g)",cal:150,tf:9,sf:2,na:45,tc:14,fb:2,as:6,pr:4},q:"You eat a full cup. How many calories?",opts:["150 cal","300 cal","600 cal"],correct:2,e:"4 servings \u00d7 150 = 600 cal! Serving sizes are smaller than you think. Always check serving size FIRST."},
+{product:"Frozen Pizza (1/3)",label:{ss:"1/3 pizza (140g)",cal:350,tf:16,sf:7,na:810,tc:38,fb:2,as:4,pr:14},q:"You eat half. Sodium situation?",opts:["Fine","High \u2014 1,215mg (over half daily limit)","Too low"],correct:1,e:"1.5 servings \u00d7 810mg = 1,215mg. Daily limit is 2,300mg. Pair with fruit or salad to balance."},
+{product:"Protein Bar",label:{ss:"1 bar (60g)",cal:250,tf:9,sf:5,na:200,tc:30,fb:4,as:8,pr:20},q:"Is this a balanced snack option?",opts:["Yes \u2014 solid protein, fiber, and balanced macros","No \u2014 too many calories","No \u2014 too much fat"],correct:0,e:"20g protein and 4g fiber will keep you full for hours. 250 calories is reasonable for a snack \u2014 more calories doesn't mean worse, it means more fuel. The protein and fiber give this real staying power."},
+];
+const foods=[
+// Proteins
+{n:"Grilled Chicken",c:"protein",e:"\ud83c\udf57",cal:165,cb:0,pr:31,ft:3.6},{n:"Black Beans",c:"protein",e:"\ud83e\udeed",cal:227,cb:41,pr:15,ft:0.9},{n:"Eggs (2)",c:"protein",e:"\ud83e\udd5a",cal:144,cb:1,pr:12,ft:10},{n:"Greek Yogurt",c:"protein",e:"\ud83e\udd5b",cal:100,cb:6,pr:17,ft:0.7},{n:"Tofu",c:"protein",e:"\ud83e\uddca",cal:180,cb:4,pr:20,ft:10},{n:"Salmon",c:"protein",e:"\ud83d\udc1f",cal:208,cb:0,pr:28,ft:10},{n:"Lentils",c:"protein",e:"\ud83c\udf72",cal:230,cb:40,pr:18,ft:0.8},{n:"Turkey",c:"protein",e:"\ud83e\udd83",cal:90,cb:1,pr:18,ft:1.5},{n:"Shrimp",c:"protein",e:"\ud83e\udd90",cal:100,cb:0,pr:24,ft:0.3},{n:"Pinto Beans",c:"protein",e:"\ud83e\udeed",cal:245,cb:45,pr:15,ft:1.1},{n:"Chickpeas",c:"protein",e:"\ud83e\udeed",cal:269,cb:45,pr:15,ft:4.2},{n:"Tuna (canned)",c:"protein",e:"\ud83d\udc1f",cal:100,cb:0,pr:22,ft:1},{n:"Ground Beef",c:"protein",e:"\ud83e\udd69",cal:250,cb:0,pr:26,ft:15},{n:"Edamame",c:"protein",e:"\ud83e\udd6c",cal:188,cb:14,pr:18,ft:8},
+// Carbs
+{n:"Brown Rice",c:"carbs",e:"\ud83c\udf5a",cal:216,cb:45,pr:5,ft:1.8},{n:"White Rice",c:"carbs",e:"\ud83c\udf5a",cal:206,cb:45,pr:4.3,ft:0.4},{n:"Whole Wheat Bread",c:"carbs",e:"\ud83c\udf5e",cal:160,cb:28,pr:8,ft:2},{n:"Sweet Potato",c:"carbs",e:"\ud83c\udf60",cal:103,cb:24,pr:2,ft:0.1},{n:"Banana",c:"carbs",e:"\ud83c\udf4c",cal:105,cb:27,pr:1.3,ft:0.4},{n:"Oatmeal",c:"carbs",e:"\ud83e\udd63",cal:154,cb:27,pr:6,ft:2.6},{n:"Tortilla (flour)",c:"carbs",e:"\ud83e\uded3",cal:140,cb:24,pr:4,ft:3.5},{n:"Tortilla (corn)",c:"carbs",e:"\ud83e\uded3",cal:106,cb:22,pr:3,ft:1.5},{n:"Plantain",c:"carbs",e:"\ud83c\udf4c",cal:179,cb:48,pr:1.2,ft:0.2},{n:"Pasta",c:"carbs",e:"\ud83c\udf5d",cal:200,cb:42,pr:7,ft:1.2},{n:"Quinoa",c:"carbs",e:"\ud83c\udf3e",cal:222,cb:39,pr:8,ft:3.5},{n:"Baked Potato",c:"carbs",e:"\ud83e\udd54",cal:161,cb:37,pr:4.3,ft:0.2},{n:"Naan Bread",c:"carbs",e:"\ud83e\uded3",cal:262,cb:45,pr:9,ft:5},{n:"Cornbread",c:"carbs",e:"\ud83c\udf5e",cal:173,cb:28,pr:4,ft:5},{n:"Granola",c:"carbs",e:"\ud83c\udf3e",cal:200,cb:30,pr:5,ft:8},
+// Fats
+{n:"Avocado",c:"fats",e:"\ud83e\udd51",cal:160,cb:9,pr:2,ft:15},{n:"Peanut Butter",c:"fats",e:"\ud83e\udd5c",cal:188,cb:7,pr:8,ft:16},{n:"Cheese",c:"fats",e:"\ud83e\uddc0",cal:113,cb:0.4,pr:7,ft:9},{n:"Olive Oil",c:"fats",e:"\ud83e\uded2",cal:119,cb:0,pr:0,ft:14},{n:"Almonds",c:"fats",e:"\ud83c\udf30",cal:207,cb:8,pr:8,ft:18},{n:"Sour Cream",c:"fats",e:"\ud83e\udd5b",cal:60,cb:1,pr:1,ft:5},{n:"Guacamole",c:"fats",e:"\ud83e\udd51",cal:100,cb:6,pr:1,ft:9},{n:"Ranch Dressing",c:"fats",e:"\ud83e\udd6b",cal:140,cb:2,pr:0,ft:14},{n:"Butter (1 tbsp)",c:"fats",e:"\ud83e\uddc8",cal:102,cb:0,pr:0,ft:12},{n:"Walnuts",c:"fats",e:"\ud83c\udf30",cal:185,cb:4,pr:4,ft:18},{n:"Chia Seeds (2 tbsp)",c:"fats",e:"\ud83c\udf31",cal:140,cb:12,pr:5,ft:9},
+// Fruits & Veggies
+{n:"Spinach",c:"veggies",e:"\ud83e\udd6c",cal:14,cb:2,pr:2,ft:0.3},{n:"Broccoli",c:"veggies",e:"\ud83e\udd66",cal:55,cb:11,pr:4,ft:0.6},{n:"Apple",c:"veggies",e:"\ud83c\udf4e",cal:95,cb:25,pr:0.5,ft:0.3},{n:"Carrots",c:"veggies",e:"\ud83e\udd55",cal:52,cb:12,pr:1,ft:0.3},{n:"Berries",c:"veggies",e:"\ud83e\uded0",cal:84,cb:21,pr:1,ft:0.5},{n:"Salsa",c:"veggies",e:"\ud83c\udf45",cal:18,cb:4,pr:0.5,ft:0.1},{n:"Mango",c:"veggies",e:"\ud83e\udd6d",cal:99,cb:25,pr:1.4,ft:0.6},{n:"Bell Pepper",c:"veggies",e:"\ud83e\uded1",cal:31,cb:6,pr:1,ft:0.3},{n:"Corn on the Cob",c:"veggies",e:"\ud83c\udf3d",cal:88,cb:19,pr:3,ft:1.4},{n:"Tomato",c:"veggies",e:"\ud83c\udf45",cal:22,cb:5,pr:1,ft:0.2},{n:"Grapes",c:"veggies",e:"\ud83c\udf47",cal:104,cb:27,pr:1,ft:0.2},{n:"Watermelon",c:"veggies",e:"\ud83c\udf49",cal:86,cb:22,pr:2,ft:0.4},{n:"Cucumber",c:"veggies",e:"\ud83e\udd52",cal:16,cb:4,pr:1,ft:0.1},{n:"Sweet Corn (canned)",c:"veggies",e:"\ud83c\udf3d",cal:133,cb:30,pr:4,ft:1.6},{n:"Collard Greens",c:"veggies",e:"\ud83e\udd6c",cal:49,cb:9,pr:4,ft:0.7},{n:"Pineapple",c:"veggies",e:"\ud83c\udf4d",cal:82,cb:22,pr:1,ft:0.2},
+// Drinks
+{n:"Milk",c:"drinks",e:"\ud83e\udd5b",cal:103,cb:12,pr:8,ft:2.4},{n:"Chocolate Milk",c:"drinks",e:"\ud83e\udd5b",cal:190,cb:26,pr:8,ft:5},{n:"Soda",c:"drinks",e:"\ud83e\udd64",cal:140,cb:39,pr:0,ft:0},{n:"Water",c:"drinks",e:"\ud83d\udca7",cal:0,cb:0,pr:0,ft:0},{n:"OJ",c:"drinks",e:"\ud83c\udf4a",cal:112,cb:26,pr:2,ft:0.5},{n:"Horchata",c:"drinks",e:"\ud83e\udd5b",cal:150,cb:26,pr:2,ft:4},{n:"Smoothie (fruit+yogurt)",c:"drinks",e:"\ud83e\udd64",cal:200,cb:36,pr:8,ft:2},{n:"Sweet Tea",c:"drinks",e:"\ud83e\uddc3",cal:90,cb:23,pr:0,ft:0},{n:"Energy Drink",c:"drinks",e:"\u26a1",cal:220,cb:54,pr:0,ft:0},
+];
+const fiberFoods=["Black Beans","Sweet Potato","Oatmeal","Broccoli","Apple","Berries","Whole Wheat Bread","Carrots","Lentils","Plantain","Mango","Bell Pepper","Pinto Beans","Chickpeas","Quinoa","Corn on the Cob","Collard Greens","Edamame","Sweet Corn (canned)","Chia Seeds (2 tbsp)"];
+const cats=[{k:"protein",l:"Protein",e:"\ud83c\udf57",cl:"#0F766E"},{k:"carbs",l:"Carbs (Energy)",e:"\u26a1",cl:"#F97316"},{k:"fats",l:"Fats",e:"\ud83e\udd51",cl:"#D97706"},{k:"veggies",l:"Fruits & Veggies",e:"\ud83e\udd66",cl:"#16A34A"},{k:"drinks",l:"Drinks",e:"\ud83e\udd64",cl:"#2563EB"}];
+
+let state={screen:"home",myth:{qi:0,sc:0,ans:false,sel:null,str:0,best:0,shuf:[]},label:{qi:0,sc:0,ans:false,sel:null,shuf:[]},meal:{sel:[],show:false},lb:[],modal:false,pn:"",ps:null};
+
+function shuffle(a){return[...a].sort(()=>Math.random()-0.5)}
+function render(){document.getElementById("app").innerHTML=screens[state.screen]()}
+
+const h=(html)=>html; // passthrough
+
+function screens_home(){
+const gm=[{id:"mythfact",em:"\ud83c\udfaf",t:"Myth vs. Fact",d:"30 questions \u2014 test what you know"},{id:"mealbuilder",em:"\ud83c\udf7d\ufe0f",t:"Build Your Plate",d:"Create a meal, see the science"},{id:"labeldetective",em:"\ud83d\udd0d",t:"Label Detective",d:"Decode real nutrition labels"},{id:"leaderboard",em:"\ud83c\udfc6",t:"Class Leaderboard",d:state.lb.length+" scores"}];
+return `<div class="screen active home-bg">
+<div style="text-align:center;margin-bottom:32px"><div style="font-size:44px;margin-bottom:6px">\ud83e\uddec\ud83c\udf4e\u26a1</div><h1 style="color:#fff;font-size:26px;font-weight:800;margin:0 0 4px">NUTRITION & METABOLISM</h1><p style="color:#14B8A6;font-size:14px;margin:0;font-style:italic">The Group Chat in Your Body</p></div>
+${gm.map(g=>`<button class="card-btn" onclick="go('${g.id}')"><div class="em">${g.em}</div><div><div class="ti">${g.t}</div><div class="de">${g.d}</div></div></button>`).join("")}
+</div>`;
+}
+
+function screens_mythfact(){
+const m=state.myth,q=m.shuf[m.qi],tot=m.shuf.length;
+if(m.qi>=tot){
+const pct=Math.round(m.sc/tot*100),msg=pct>=90?["\ud83c\udfc6","Nutrition Scientist!"]:pct>=70?["\u2b50","Solid knowledge!"]:pct>=50?["\ud83d\udcaa","Getting there!"]:["\ud83d\udcda","Study up!"];
+return `<div class="screen active home-bg" style="padding:24px"><div class="end-card"><div class="end-emoji">${msg[0]}</div><div class="end-title">${msg[1]}</div><div class="end-score" style="color:${pct>=70?"#16A34A":"#EA580C"}">${m.sc}/${tot}</div><p style="color:#888;font-size:13px">Best streak: ${m.best}</p><div class="btn-row" style="margin-top:20px;flex-wrap:wrap"><button class="btn btn-amber" style="flex:1" onclick="promptLb(${m.sc},'Myth vs. Fact',${tot})">\ud83c\udfc6 Leaderboard</button><button class="btn btn-teal" style="flex:1" onclick="go('mythfact')">Play Again</button><button class="btn btn-gray" style="flex:1" onclick="go('home')">Home</button></div></div></div>`}
+const ok=m.sel===q.a,prog=(m.qi/tot*100);
+return `<div class="screen active"><div class="hdr"><button onclick="go('home')">\u2190 Back</button><span>${m.sc}/${m.qi}${m.str>2?" \ud83d\udd25"+m.str:""}</span></div><div class="prog"><div class="prog-fill" style="width:${prog}%"></div></div><div class="container">
+<div style="display:flex;justify-content:space-between;margin-bottom:10px"><span class="tag">${q.c}</span><span style="color:#aaa;font-size:12px">${m.qi+1}/${tot}</span></div>
+<div class="q-card"><p>\u201c${q.s}\u201d</p></div>
+${!m.ans?`<div class="btn-row"><button class="btn btn-red" onclick="mythAns('myth')">\ud83d\udeab MYTH</button><button class="btn btn-green" onclick="mythAns('fact')">\u2705 FACT</button></div>`:`<div><div class="result-box ${ok?"result-ok":"result-no"}"><div class="rt">${ok?"\u2705 Correct!":"\u274c It's a "+q.a.toUpperCase()}</div><p>${q.e}</p></div><button class="btn btn-teal" onclick="mythNext()">${m.qi<tot-1?"Next \u2192":"Results \u2192"}</button></div>`}
+</div></div>`}
+
+function screens_labeldetective(){
+const l=state.label,q=l.shuf[l.qi],tot=l.shuf.length;
+if(l.qi>=tot){
+const pct=Math.round(l.sc/tot*100),msg=pct>=80?["\ud83d\udd75\ufe0f","Label Expert!"]:pct>=60?["\ud83d\udd0d","Good eye!"]:["\ud83d\udc40","Keep practicing!"];
+return `<div class="screen active home-bg" style="padding:24px"><div class="end-card"><div class="end-emoji">${msg[0]}</div><div class="end-title">${msg[1]}</div><div class="end-score" style="color:${pct>=70?"#16A34A":"#EA580C"}">${l.sc}/${tot}</div><div class="btn-row" style="margin-top:20px;flex-wrap:wrap"><button class="btn btn-amber" style="flex:1" onclick="promptLb(${l.sc},'Label Detective',${tot})">\ud83c\udfc6 Leaderboard</button><button class="btn btn-teal" style="flex:1" onclick="go('labeldetective')">Play Again</button><button class="btn btn-gray" style="flex:1" onclick="go('home')">Home</button></div></div></div>`}
+const L=q.label;
+const rows=[{n:"Total Fat",v:L.tf+"g",b:1},{n:"  Sat. Fat",v:L.sf+"g"},{n:"Sodium",v:L.na+"mg",b:1},{n:"Total Carbs",v:L.tc+"g",b:1},{n:"  Fiber",v:L.fb+"g"},{n:"  Added Sugars",v:L.as+"g",w:L.as>10},{n:"Protein",v:L.pr+"g",b:1}];
+return `<div class="screen active"><div class="hdr"><button onclick="go('home')">\u2190 Back</button><span>\ud83d\udd0d ${l.qi+1}/${tot}</span></div><div class="container">
+<h3 style="font-size:16px;font-weight:800;color:#065A60;margin:0 0 12px">\ud83c\udff7\ufe0f ${q.product}</h3>
+<div class="label-box"><div class="label-title">Nutrition Facts</div><div style="font-size:11px;color:#666;margin-bottom:4px">Serving size ${L.ss}</div><div class="label-cal"><span>Calories</span><span>${L.cal}</span></div>${rows.map(r=>`<div class="label-row${r.b?" bold":""}${r.w?" warn":""}"><span>${r.n}</span><span>${r.v}</span></div>`).join("")}</div>
+<div class="label-q"><p>${q.q}</p></div>
+${q.opts.map((o,i)=>{let cls="opt-btn";if(l.ans){if(i===q.correct)cls+=" correct";if(l.sel===i&&i!==q.correct)cls+=" wrong";cls+=" dim"}return`<button class="${cls}" onclick="labelAns(${i})">${l.ans&&i===q.correct?"\u2705 ":""}${l.ans&&l.sel===i&&i!==q.correct?"\u274c ":""}${o}</button>`}).join("")}
+${l.ans?`<div style="background:#faf5ff;border:1px solid #7C3AED40;border-radius:12px;padding:12px 16px;margin-bottom:14px"><p style="font-size:13px;color:#444;line-height:1.55">${q.e}</p></div><button class="btn btn-teal" onclick="labelNext()">${l.qi<tot-1?"Next Label \u2192":"Results \u2192"}</button>`:""}
+</div></div>`}
+
+function screens_mealbuilder(){
+const sel=state.meal.sel;
+const tot=sel.reduce((a,f)=>({cal:a.cal+f.cal,cb:a.cb+f.cb,pr:a.pr+f.pr,ft:a.ft+f.ft}),{cal:0,cb:0,pr:0,ft:0});
+if(state.meal.show){
+const hP=sel.some(f=>f.c==="protein"),hC=sel.some(f=>f.c==="carbs"),hF=sel.some(f=>f.c==="fats"),hV=sel.some(f=>f.c==="veggies");
+const hFb=sel.some(f=>fiberFoods.includes(f.n)),hSoda=sel.some(f=>f.n==="Soda"||f.n==="Energy Drink"),hW=sel.some(f=>f.n==="Water"||f.n==="Milk");
+const bal=[hP,hC,hF].filter(Boolean).length;
+let pred;
+if(bal===3&&hFb&&!hSoda)pred={l:"Steady Energy",em:"\ud83d\udfe2",d:"Great combo! Protein + fat slow digestion, fiber steadies blood sugar. 3-4 hours of fuel.",cl:"#16A34A"};
+else if(bal===3&&hSoda)pred={l:"Mixed Signals",em:"\ud83d\udfe1",d:"Good macros but soda adds a sugar spike. Swap for water or milk.",cl:"#D97706"};
+else if(bal===3)pred={l:"Good Energy",em:"\ud83d\udfe1",d:"All three macros! Adding fiber would sustain it longer.",cl:"#D97706"};
+else if(hC&&!hP&&!hF)pred={l:"Spike \u2192 Crash",em:"\ud83d\udd34",d:"Carbs alone = quick energy then crash. Add protein or fat.",cl:"#DC2626"};
+else if(bal>=2)pred={l:"Pretty Good",em:"\ud83d\udfe1",d:"2 of 3 macros. Adding the missing one rounds it out.",cl:"#D97706"};
+else pred={l:"Needs More",em:"\ud83d\udfe0",d:"Light on macros. Add a mix of carbs, protein, and fat.",cl:"#EA580C"};
+const cP=tot.cal>0?Math.round(tot.cb*4/tot.cal*100):0,pP=tot.cal>0?Math.round(tot.pr*4/tot.cal*100):0,fP=tot.cal>0?Math.round(tot.ft*9/tot.cal*100):0;
+const checks=[{l:"Protein",c:hP},{l:"Carbs",c:hC},{l:"Fats",c:hF},{l:"Fruits/veggies",c:hV},{l:"Fiber",c:hFb},{l:"Water/milk",c:hW}];
+return `<div class="screen active"><div class="hdr"><button onclick="mealBack()">\u2190 Edit</button><span>Meal Analysis</span></div><div class="container">
+<div class="analysis-card"><h3 style="margin:0 0 10px;font-size:15px;color:#065A60">Your Plate</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${sel.map(f=>`<span style="background:#f0f9ff;padding:4px 10px;border-radius:16px;font-size:12px;font-weight:600">${f.e} ${f.n}</span>`).join("")}</div></div>
+<div class="analysis-card" style="border-left:4px solid ${pred.cl}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:24px">${pred.em}</span><h3 style="margin:0;font-size:17px;font-weight:800;color:${pred.cl}">${pred.l}</h3></div><p style="font-size:13px;color:#555;line-height:1.5">${pred.d}</p></div>
+<div class="analysis-card"><div style="text-align:center;margin-bottom:12px"><span style="font-size:32px;font-weight:800;color:#065A60">${tot.cal}</span><span style="font-size:13px;color:#999;margin-left:4px">cal</span></div><div class="macro-bar">${cP>0?`<div style="width:${cP}%;background:#F97316"></div>`:""}${pP>0?`<div style="width:${pP}%;background:#0F766E"></div>`:""}${fP>0?`<div style="width:${fP}%;background:#D97706"></div>`:""}</div><div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:#F97316;font-weight:700">Carbs ${cP}%<br><span style="font-weight:400;color:#888">${tot.cb}g</span></span><span style="color:#0F766E;font-weight:700">Protein ${pP}%<br><span style="font-weight:400;color:#888">${tot.pr}g</span></span><span style="color:#D97706;font-weight:700">Fat ${fP}%<br><span style="font-weight:400;color:#888">${tot.ft}g</span></span></div></div>
+<div class="analysis-card">${checks.map(c=>`<div class="checklist-row"><span style="font-size:16px">${c.c?"\u2705":"\u2b1c"}</span><span style="color:${c.c?"#333":"#aaa"};font-weight:${c.c?600:400}">${c.l}</span></div>`).join("")}</div>
+<div style="background:#0F766E10;border-radius:18px;padding:16px;margin-bottom:16px;border:1px solid #0F766E30"><h3 style="margin:0 0 6px;font-size:14px;color:#065A60">\u26a1 After eating this:</h3><ol class="steps"><li>Digestion: carbs fastest, then protein, then fat</li><li>Glucose \u2192 bloodstream \u2192 insulin rises \u2192 cells fuel up</li><li>${hP&&hF?"Protein & fat slow emptying \u2192 steady energy":"Without protein/fat, glucose enters fast \u2192 crash"}</li><li>${hFb?"Fiber feeds gut bacteria + slows absorption":"Adding fiber = longer fullness"}</li><li>Glucose \u2192 pyruvate \u2192 acetyl-CoA \u2192 ATP via TCA & ETC</li>${hSoda?"<li style='color:#DC2626'>\u26a0\ufe0f Soda sugar hits fast with nothing to slow it</li>":""}</ol></div>
+<div class="btn-row"><button class="btn btn-teal" onclick="mealBack()">Edit Meal</button><button class="btn btn-gray" onclick="mealReset()">Start Over</button></div>
+</div></div>`}
+return `<div class="screen active" style="padding-bottom:${sel.length>0?"90px":"20px"}"><div class="hdr"><button onclick="go('home')">\u2190 Back</button><span>\ud83c\udf7d\ufe0f Build Your Plate</span></div><div class="container"><p style="font-size:13px;color:#666;margin-bottom:14px">Pick foods, then analyze your meal's energy prediction, macro balance, and cellular pathway.</p>
+${cats.map(ct=>`<div class="food-cat" style="margin-bottom:16px"><h3 style="color:${ct.cl}"><span>${ct.e}</span> ${ct.l}</h3><div>${foods.filter(f=>f.c===ct.k).map(f=>{const on=sel.find(x=>x.n===f.n);return`<button class="food-btn${on?" on":""}" style="${on?`background:${ct.cl};border-color:${ct.cl};color:#fff`:""}" onclick="mealToggle('${f.n.replace(/'/g,"\\'")}')">${f.e} ${f.n}</button>`}).join("")}</div></div>`).join("")}
+</div>${sel.length>0?`<div class="meal-bar"><div style="font-size:12px;color:#666"><b style="color:#065A60">${sel.length}</b> items \u2022 <b style="color:#065A60">${tot.cal}</b> cal</div><button class="btn btn-teal" style="padding:10px 24px" onclick="mealAnalyze()">Analyze \u2192</button></div>`:""}</div>`}
+
+function screens_leaderboard(){
+return `<div class="screen active"><div class="hdr"><button onclick="go('home')">\u2190 Back</button><span>\ud83c\udfc6 Leaderboard</span></div><div class="container">
+${state.lb.length===0?`<div style="text-align:center;padding:40px;color:#999"><div style="font-size:48px;margin-bottom:12px">\ud83c\udfc6</div><p style="font-size:16px;font-weight:600">No scores yet!</p><p style="font-size:14px">Play a game to get on the board.</p></div>`:state.lb.map((e,i)=>`<div class="lb-entry" style="background:${i===0?"#fef3c7":i===1?"#f1f5f9":i===2?"#fff7ed":"#fff"}"><div class="lb-rank" style="color:${i<3?"#065A60":"#94a3b8"}">${i===0?"\ud83e\udd47":i===1?"\ud83e\udd48":i===2?"\ud83e\udd49":"#"+(i+1)}</div><div style="flex:1"><div class="lb-name">${e.name}</div><div class="lb-game">${e.game}</div></div><div style="text-align:right"><div class="lb-pct" style="color:${e.pct>=80?"#16A34A":e.pct>=60?"#D97706":"#DC2626"}">${e.pct}%</div><div style="font-size:11px;color:#94a3b8">${e.score}/${e.total}</div></div></div>`).join("")}
+</div></div>`}
+
+const screens={home:screens_home,mythfact:screens_mythfact,labeldetective:screens_labeldetective,mealbuilder:screens_mealbuilder,leaderboard:screens_leaderboard};
+
+function go(s){
+if(s==="mythfact"){state.myth={qi:0,sc:0,ans:false,sel:null,str:0,best:0,shuf:shuffle(mythQ)}}
+if(s==="labeldetective"){state.label={qi:0,sc:0,ans:false,sel:null,shuf:shuffle(labelQ)}}
+if(s==="mealbuilder"){state.meal={sel:[],show:false}}
+state.screen=s;render()
+}
+function mythAns(a){if(state.myth.ans)return;const q=state.myth.shuf[state.myth.qi],ok=a===q.a;state.myth.ans=true;state.myth.sel=a;if(ok){state.myth.sc++;state.myth.str++;state.myth.best=Math.max(state.myth.best,state.myth.str)}else{state.myth.str=0}render()}
+function mythNext(){state.myth.qi++;state.myth.ans=false;state.myth.sel=null;render()}
+function labelAns(i){if(state.label.ans)return;state.label.ans=true;state.label.sel=i;if(i===state.label.shuf[state.label.qi].correct)state.label.sc++;render()}
+function labelNext(){state.label.qi++;state.label.ans=false;state.label.sel=null;render()}
+function mealToggle(name){const f=foods.find(x=>x.n===name);if(!f)return;const idx=state.meal.sel.findIndex(x=>x.n===name);if(idx>=0)state.meal.sel.splice(idx,1);else state.meal.sel.push(f);state.meal.show=false;render()}
+function mealAnalyze(){state.meal.show=true;render();window.scrollTo(0,0)}
+function mealBack(){state.meal.show=false;render()}
+function mealReset(){state.meal={sel:[],show:false};render()}
+function promptLb(score,game,total){state.ps={score,game,total};state.modal=true;renderModal()}
+function renderModal(){
+if(!state.modal){document.getElementById("modal-root")?.remove();return}
+let m=document.getElementById("modal-root");if(!m){m=document.createElement("div");m.id="modal-root";document.body.appendChild(m)}
+m.innerHTML=`<div class="modal-bg" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><div style="font-size:36px;margin-bottom:8px">\ud83c\udfc6</div><h3 style="margin:0 0 4px;color:#065A60;font-size:18px">Add to Leaderboard?</h3><p style="color:#666;font-size:13px;margin-bottom:16px">Enter your name or nickname</p><input id="lb-name" placeholder="Your name..." maxlength="20" onkeydown="if(event.key==='Enter')submitLb()"><div class="btn-row"><button class="btn btn-teal" style="flex:1" onclick="submitLb()">Submit</button><button class="btn btn-gray" style="flex:1" onclick="closeModal()">Skip</button></div></div></div>`}
+function submitLb(){const name=document.getElementById("lb-name")?.value?.trim();if(name&&state.ps){state.lb.push({name,score:state.ps.score,game:state.ps.game,total:state.ps.total,pct:Math.round(state.ps.score/state.ps.total*100)});state.lb.sort((a,b)=>b.pct-a.pct);state.lb=state.lb.slice(0,20)}closeModal()}
+function closeModal(){state.modal=false;state.ps=null;document.getElementById("modal-root")?.remove()}
+
+go("home");
+</script>
+</body>
+</html>
